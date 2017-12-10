@@ -1,6 +1,5 @@
-# bow
-## biological occurrence work bench
-### Robert P. McGuinn 
+# bow - biological occurrence work bench
+## a mission to find the thing 
 begin: 20171210:0827:EST
 
 
