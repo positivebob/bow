@@ -42,7 +42,7 @@ land <- readOGR(dsn = ".", "mcguinnland")
 print(land)
 
 # look at the variables in the SpatialPolygonDataFrame
-name(land)
+names(land)
 
 # look at the attribute table in the slot called data
 land@data
@@ -186,7 +186,7 @@ lnd.b1 +
 
 ##### Getting a map #####
 # set location variable
-location <- "Gladwin, Michigan"
+location <- "Asheville, NC"
 gc <- geocode(location)
 
 # customizing gc
@@ -197,11 +197,10 @@ gc <- geocode(location)
   
 
 google <- get_googlemap(c(gc$lon,gc$lat), 
-                        zoom = 13,
+                        zoom = 8,
                         maptype = "hybrid")
 
 
-lon
 ggmap(google) +
   geom_point(aes(x = lon, y = lat), data=gc, colour = "red", size = 4)
 
@@ -211,59 +210,25 @@ z <- .45
 #bbox <- c(left = gc$lon-.01, bottom = gc$lat-.01, right = gc$lon+.01, top = gc$lat+.01)
 bbox <- c(left = gc$lon-z, bottom = gc$lat-z, right = gc$lon+z, top = gc$lat+z)
 
-##### ____ Working with searching Google maps API (from user) ####
-coordenadas<-geocode(location)
-encontrar<-function(lugar,radius,keyword){
-  
-  # radius in meters
-  # lugar is coordinates from google maps by hand
-  coor<-paste(lugar[1],lugar[2],sep=",")
-  baseurl<-"https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
-  google_key<-c("AIzaSyCW0iITfCmFQMHxp8vEd4c4c9r1rDDDUwU")
-  
-  
-  q<-paste(baseurl,"location=",coor,"&radius=",radius,"&types=food|restaurant&keyword=",keyword,"&key=",google_key, sep="")
-  
-  print(q)
-  
-  data1<-fromJSON(q)
-  
-  lat_long<-data.frame(lat=data1$results$geometry$location$lat,long=data1$results$geometry$location$lng)
-  
-  #print(data1)
-  
-  sitios<-data1$results$name
-  
-  df<-cbind(sitios,lat_long)
-  return(df)
-}
-
-encontrar(lugar = coordenadas,radius = 500,"pizzeria")
-
-##### working with NASA PDS #####
-setwd("C:/rworking/pds")
-getwd()
-
-readme <- read.table("pdsdd.full",)
-
 ##### _____ Working with rerddap #####
 
 ##### install.packages for working with rerddap ##### 
-install.packages("devtools")
-install.packages("digest")
-install.packages("data.table")
-install.packages("DBI")
-install.packages("assertthat")
-install.packages("Rcpp")
-install.packages("rerddap")
-install.packages("magrittr")
+install.packages("devtools", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("digest", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("data.table", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("DBI", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4"))
+install.packages("assertthat", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("Rcpp", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("rerddap", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+install.packages("magrittr", lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
+
 
 library(magrittr)
 library(Rcpp)
 library(assertthat)
 library(DBI)
 library(devtools)
-library(data.table)
+library(data.table, lib = "C:/Users/robert.mcguinn/Documents/R/win-library/3.4")
 library(digest)
 library(rerddap)
 
@@ -284,9 +249,24 @@ fix(x)
 # Get info on a datasetid, then get data given information learned
 info('deep_sea_corals', url = "https://ecowatch.ncddc.noaa.gov/erddap/")$variables
 
+# Limiting by depth.
 x <- tabledap('deep_sea_corals', 
          fields=c('latitude','longitude', "DepthInMeters", "Temperature", 'ScientificName', "ImageURL"),
-         url = "https://ecowatch.ncddc.noaa.gov/erddap/")
+         url = "https://ecowatch.ncddc.noaa.gov/erddap/", "DepthInMeters>4000")
+
+View(x$DepthInMeters)
+
+# Spatial delimitation
+x <- tabledap('deep_sea_corals', 
+              fields=c('latitude','longitude', "DepthInMeters", "Temperature", 'ScientificName', "ImageURL"),
+              url = "https://ecowatch.ncddc.noaa.gov/erddap/", 
+              'latitude>=34.8', 'latitude<=35', 'longitude>=-145', 'longitude<=-100')
+
+
+# tabledap('hawaii_b55f_a8f2_ad70',
+#   fields = c('longitude', 'latitude', 'chlorophyll', 'salinity'),
+#   'time>=2010-06-24', 'time<=2010-07-01'
+# )
 
 x <- x[is.na(x$ImageURL) == F,]
         
@@ -297,6 +277,18 @@ x <- x %>%
 
 setwd("C:/rworking/spatial_killa/o")
 write.csv(x, "x.csv")
+
+
+
+# # Integrate with taxize
+# out <- tabledap('erdCalCOFIlrvcntHBtoHI',
+#    fields = c('latitude','longitude','scientific_name','itis_tsn'),
+#    'time>=2007-06-10', 'time<=2007-09-21'
+# )
+# tsns <- unique(out$itis_tsn[1:100])
+# library("taxize")
+# classif <- classification(tsns, db = "itis")
+# head(rbind(classif)); tail(rbind(classif))
 
 ##### Exporting to KML ##### 
 
@@ -428,4 +420,6 @@ class(urls)
 
 #Load the first four, return as image list, display
 map_il(urls[1:4],load.image) %>% plot
+
+
 
