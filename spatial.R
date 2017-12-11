@@ -234,6 +234,7 @@ library(rerddap)
 
 ##### using erddap #####
 library(rerddap)
+
 # search for key word 
 x <- ed_search(query='deep', url = "https://ecowatch.ncddc.noaa.gov/erddap/")
 x$alldata[[1]]
@@ -241,7 +242,7 @@ x$info
 
 # list all datasets on server
 x <- head(ed_datasets('table', url = "https://ecowatch.ncddc.noaa.gov/erddap/"))
-fix(x)
+View(x)
 
 x <- head(ed_datasets('grid', url = "https://ecowatch.ncddc.noaa.gov/erddap/"))
 fix(x)
