@@ -1,4 +1,4 @@
-# bow - biological occurrence work bench
+# bow - biological occurrence workbench
 ## a mission to find the thing 
 begin: 20171210:0827:EST
 
